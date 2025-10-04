@@ -1,4 +1,4 @@
-package edu.ntnu.iir.bidata;
+package edu.ntnu.iir.bidata.oving4;
 
 import java.util.List;
 
