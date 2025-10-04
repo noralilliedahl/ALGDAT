@@ -7,7 +7,8 @@ public class Hashtable {
   private Node[] table;
   private List<String> names;
   private int size;
-  private int collisions = 0;
+  private int putCollisions = 0;
+  private int searchCollisions = 0;
 
   public static class Node{
 
@@ -25,6 +26,22 @@ public class Hashtable {
     table = new Node[capacity];
   }
 
+  public int getSize() {
+    return size;
+  }
+
+  public int getCapacity() {
+    return table.length;
+  }
+
+  public double getLoadFactor() {
+    return (double) size / table.length;
+  }
+
+  public long getPutCollisions() {
+    return putCollisions;
+  }
+
   private int index(String k) {
     long h = 0;
     for (int i = 0; i < k.length(); i++) {
@@ -38,7 +55,7 @@ public class Hashtable {
     Node head = table[i];
 
     if (head != null && !head.key.equals(k)) {
-      collisions++;
+      putCollisions++;
     }
 
     Node cur = head;
@@ -56,6 +73,10 @@ public class Hashtable {
   public boolean containsKey(String k) {
     int i = index(k);
     Node cur = table[i];
+
+    if (cur != null && !cur.key.equals(k)) {
+      searchCollisions++;
+    }
 
     while (cur != null) {
       if (cur.key.equals(k)) {
