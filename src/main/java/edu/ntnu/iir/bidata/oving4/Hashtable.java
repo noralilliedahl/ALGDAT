@@ -166,11 +166,11 @@ public class Hashtable {
         h.put(name);
       }
 
-      System.out.println(h.getSize());
-      System.out.println(h.getCapacity());
-      System.out.println(h.getLoadFactor());
-      System.out.println(h.getPutCollisions());
-      System.out.println(h.getPutCollisions() / (double) h.getSize());
+      System.out.println("Size: " + h.getSize());
+      System.out.println("Capacity: " + h.getCapacity());
+      System.out.println("Load factor: " + h.getLoadFactor());
+      System.out.println("Putting collisions: " + h.getPutCollisions());
+      System.out.println("Average collisions per person: " + h.getPutCollisions() / (double) h.getSize());
       System.out.println(h.containsKey("Nora Lilliedahl Kirknes"));
 
     } catch (IOException e) {
