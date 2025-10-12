@@ -41,33 +41,14 @@ class Graf {
     naboListe[kant.fraNode].add(kant.tilNode);
   }
 
-  public Graf lesGrafFraFil(Path p) {
-
-    try (BufferedReader br = Files.newBufferedReader(p)){
-      String[] noderOgKanter = br.readLine().trim().split("\\s+");
-      int noder = Integer.parseInt(noderOgKanter[0]);
-      int kanter = Integer.parseInt(noderOgKanter[1]);
-      Graf g = new Graf(noder);
-
-      for (int i = 0; i < kanter; i++) {
-        String[] tilFra = br.readLine().trim().split("\\s+");
-        int fra = Integer.parseInt(tilFra[0]);
-        int til = Integer.parseInt(tilFra[1]);
-        g.leggTilKant(fra, til);
-      }
-      if (kanter != g.getAntKant()) {
-        throw new IllegalArgumentException("fallback");
-      }
-      return g;
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    return null;
-  }
-
   public int getAntKant() { return antKant; }
 
   public int getAntNoder() { return antNoder; }
+
+  public int getRandomNode() {
+    Random rand = new Random();
+    return rand.nextInt(antNoder);
+  }
 
   public List<Integer> naboer(int id) {
     return List.copyOf(naboListe[id]);
@@ -180,21 +161,17 @@ class GrafAlgoritme {
     return rekkefolge;
   }
 
-  public boolean getSyklus(){
-    return harSyklus;
-  }
-
-  public bfsResultat getResultat(Graf g, int start) {
+  public String getResultatBFS(Graf g, int start) {
     bfsAlgoritme(g, start);
     int[] d = getDistanse();
     int[] f = getForgjenger();
-    return new bfsResultat(start, d, f);
+    return new bfsResultat(start, d, f).toString();
   }
 
-  public topoResultat getResultat(Graf g) {
+  public String getResultatTOPO(Graf g) {
     topoAlgoritme(g);
     Deque<Integer> r = getRekkefolge();
-    return new topoResultat(r);
+    return new topoResultat(r).toString();
   }
 
   public static class bfsResultat {
@@ -208,6 +185,21 @@ class GrafAlgoritme {
       this.distanse = distanse.clone();
       this.forgjenger = forgjenger.clone();
     }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder();
+      sb.append("Node  Forgj  Dist\n");
+      for (int v = 0; v < distanse.length; v++) {
+        sb.append(String.format("%4d  %5s  %4s",
+          v,
+          (forgjenger[v] == -1 ? "-" : Integer.toString(forgjenger[v])),
+          (distanse[v]   == -1 ? "-" : Integer.toString(distanse[v]))
+        ));
+        if (v < distanse.length - 1) sb.append('\n');
+      }
+      return sb.toString();
+    }
   }
   public static class topoResultat {
 
@@ -219,6 +211,99 @@ class GrafAlgoritme {
 
     private static int[] dequeTilArray(Deque<Integer> dq) {
       return dq.stream().mapToInt(Integer::intValue).toArray();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder();
+      for (int i = 0; i < rekkefolge.length; i++) {
+        if (i > 0) sb.append(' ');
+        sb.append(rekkefolge[i]);
+      }
+      return sb.toString();
+    }
+  }
+}
+
+class Main {
+
+  public static Graf lesGrafFraFil(Path p) {
+
+    try (BufferedReader br = Files.newBufferedReader(p)){
+      String[] noderOgKanter = br.readLine().trim().split("\\s+");
+      int noder = Integer.parseInt(noderOgKanter[0]);
+      int kanter = Integer.parseInt(noderOgKanter[1]);
+      Graf g = new Graf(noder);
+
+      for (int i = 0; i < kanter; i++) {
+        String[] tilFra = br.readLine().trim().split("\\s+");
+        int fra = Integer.parseInt(tilFra[0]);
+        int til = Integer.parseInt(tilFra[1]);
+        g.leggTilKant(fra, til);
+      }
+      if (kanter != g.getAntKant()) {
+        throw new IllegalStateException("Feil under lesing.");
+      }
+      return g;
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
+
+  public static void main(String[] args) {
+
+    GrafAlgoritme ga = new GrafAlgoritme();
+
+    /**
+     * Nedenfor er kommentert ut kode som printer resultatene for alle
+     * grafene fra oppgaven i ett kjør. g1, g2 osv..
+     *
+     * Ellers kan den enklere varianten (som ikke er kommentert ut) brukes,
+     * hvor man bare justerer på filene som blir lest i koden.
+     *
+     * Whatever floats your boat
+     *
+     * Startnoden for BFS blir satt av en random-metode for å
+     * illustrere at søket blir utført for vilkålige noder.
+     *
+     * Denne kan også eventuelt justeres ved retting.
+     */
+
+    try {
+
+    /*
+    for (int i = 1; i <= 7; i++) {
+      if (i == 4 || i == 6) { continue; }
+      Graf gBFS = lesGrafFraFil(Path.of("ø5g" + i + ".txt"));
+      assert gBFS != null;
+      int startNode = gBFS.getRandomNode();
+      System.out.println(ga.getResultatBFS(gBFS, startNode);
+    }
+
+    for (int i = 5; i <= 7; i++) {
+      if (i == 6) { continue; }
+      Graf gTOPO = lesGrafFraFil(Path.of("ø5g" + i + ".txt"));
+      System.out.println(ga.getResultatTOPO(gTOPO));
+    }
+     */
+
+      //Enkel variant:):)
+      Graf gBFS = lesGrafFraFil(Path.of("ø5g2.txt"));
+
+      //Vilkålig node
+      int startNode = gBFS.getRandomNode();
+      System.out.println("Startnode: " + startNode);
+      System.out.println(ga.getResultatBFS(gBFS, startNode));
+
+      Graf gTOPO = lesGrafFraFil(Path.of("ø5g7.txt"));
+      System.out.println("Topologisk sortert graf: " + ga.getResultatTOPO(gTOPO));
+
+      Graf grafVilFeile = lesGrafFraFil(Path.of("ø5g2.txt"));
+      System.out.println("Topologisk sortert graf: " + ga.getResultatTOPO(grafVilFeile));
+
+    } catch (IllegalStateException e) {
+      System.out.println(e.getMessage());
     }
   }
 }
